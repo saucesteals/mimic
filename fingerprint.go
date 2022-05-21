@@ -4,8 +4,9 @@ import (
 	utls "github.com/refraction-networking/utls"
 )
 
-func (m *ClientSpec) ToTLSSpec() *utls.ClientHelloSpec {
-	switch m {
+func (c *ClientSpec) ToTLSSpec() *utls.ClientHelloSpec {
+	// From: https://github.com/sleeyax/utls
+	switch c {
 	case Chrome83:
 		return &utls.ClientHelloSpec{
 			CipherSuites: []uint16{
