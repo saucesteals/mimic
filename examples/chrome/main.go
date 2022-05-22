@@ -35,7 +35,7 @@ func main() {
 			"user-agent", "accept", "x-requested-with",
 			"downlink", "ect", "sec-ch-ua-platform",
 			"sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest",
-			"accept-encoding", "accept-language", "cookie",
+			"accept-encoding", "accept-language",
 		},
 		http.PHeaderOrderKey: {":method", ":authority", ":scheme", ":path"},
 	}
