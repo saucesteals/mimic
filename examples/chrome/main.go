@@ -22,7 +22,7 @@ func main() {
 
 	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
 
-	// Transport already injects default headers based on the spec
+	// Transport already injects default headers based on the spec (which you can override)
 	// Just need to provide the correct header order
 	req.Header = http.Header{
 		http.HeaderOrderKey: {
