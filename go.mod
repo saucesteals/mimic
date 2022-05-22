@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/refraction-networking/utls v1.1.0
-	github.com/saucesteals/fhttp v0.0.0-20220522040518-a1a94f6620d8
+	github.com/saucesteals/fhttp v0.0.0-20220522200852-512ce1eef1bc
 )
 
 require (
