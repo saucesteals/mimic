@@ -1,76 +1,46 @@
 package mimic
 
 import (
-	"context"
-	"crypto/tls"
-	"net"
-	"time"
+	"log"
 
-	utls "github.com/refraction-networking/utls"
 	http "github.com/saucesteals/fhttp"
 	"github.com/saucesteals/fhttp/http2"
 )
 
 type Transport struct {
-	T  *http.Transport
-	T2 *http2.Transport
-
-	dialer *net.Dialer
-
-	tlsSpec *utls.ClientHelloSpec
+	T    *http.Transport
+	spec *ClientSpec
 }
 
-func (t *Transport) dialTls(ctx context.Context, network string, addr string) (net.Conn, error) {
-	dialConn, err := t.dialer.DialContext(ctx, network, addr)
+func (c *ClientSpec) NewTransport(t1 *http.Transport) *Transport {
+	if t1 == nil {
+		t1 = &http.Transport{}
+	}
+
+	t := &Transport{T: t1, spec: c}
+	t.T.TlsClientHelloSpec = c.GetTLSSpec()
+
+	t2, err := http2.ConfigureTransports(t.T)
 
 	if err != nil {
-		return nil, err
+		log.Printf("error enabling Transport HTTP/2 support: %v", err)
+		return t
 	}
 
-	name, _, err := net.SplitHostPort(addr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	tlsConn := utls.UClient(dialConn, &utls.Config{ServerName: name}, utls.HelloCustom)
-
-	if err = tlsConn.ApplyPreset(t.tlsSpec); err != nil {
-		return nil, err
-	}
-
-	if err = tlsConn.Handshake(); err != nil {
-		return nil, err
-	}
-
-	return tlsConn, nil
-}
-
-func (c *ClientSpec) NewTransport() *Transport {
-	t := &Transport{
-		T:  &http.Transport{},
-		T2: &http2.Transport{},
-		dialer: &net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		},
-		tlsSpec: c.ToTLSSpec(),
-	}
-
-	t.T.DialTLSContext = t.dialTls
-	t.T2.DialTLS = func(network, addr string, _ *tls.Config) (net.Conn, error) {
-		return t.dialTls(context.Background(), network, addr)
-	}
-	t.T2.Settings = c.H2Options.Settings
-	t.T2.MaxHeaderListSize = c.H2Options.MaxHeaderListSize
-	t.T2.InitialWindowSize = c.H2Options.MaxHeaderListSize
-	t.T2.HeaderTableSize = c.H2Options.MaxHeaderListSize
+	t2.Settings = c.h2Options.Settings
+	t2.MaxHeaderListSize = c.h2Options.MaxHeaderListSize
+	t2.InitialWindowSize = c.h2Options.MaxHeaderListSize
+	t2.HeaderTableSize = c.h2Options.MaxHeaderListSize
 
 	return t
+
 }
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	if _, ok := req.Header[http.PHeaderOrderKey]; ok {
-		return t.T2.RoundTrip(req)
+	for key, values := range t.spec.headers {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
 	}
+
 	return t.T.RoundTrip(req)
 }
