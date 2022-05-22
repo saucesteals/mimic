@@ -12,6 +12,12 @@ func main() {
 
 	client := &http.Client{
 		Transport: mimic.Chrome101.NewTransport(nil),
+		// Transport: mimic.Chrome101.NewTransport(
+		// 	&http.Transport{
+		// 		Proxy: ...,
+		// 		...,
+		// 	},
+		// ),
 	}
 
 	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
