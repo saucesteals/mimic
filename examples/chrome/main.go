@@ -16,6 +16,8 @@ func main() {
 
 	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
 
+	// Transport already injects default headers based on the spec
+	// Just need to provide the correct header order
 	req.Header = http.Header{
 		http.HeaderOrderKey: {
 			"cache-control", "upgrade-insecure-requests",
