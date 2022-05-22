@@ -5,19 +5,6 @@ import (
 	"github.com/saucesteals/fhttp/http2"
 )
 
-type H2Options struct {
-	Settings          []http2.Setting
-	PseudoHeaderOrder []string
-	MaxHeaderListSize uint32
-	InitialWindowSize uint32
-	HeaderTableSize   uint32
-}
-
-type ClientSpec struct {
-	h2Options *H2Options
-	headers   http.Header
-}
-
 var (
 	chromeH2Options = &H2Options{
 		PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
@@ -50,3 +37,20 @@ var (
 		h2Options: chromeH2Options,
 	}
 )
+
+type H2Options struct {
+	Settings          []http2.Setting
+	PseudoHeaderOrder []string
+	MaxHeaderListSize uint32
+	InitialWindowSize uint32
+	HeaderTableSize   uint32
+}
+
+type ClientSpec struct {
+	h2Options *H2Options
+	headers   http.Header
+}
+
+func (c *ClientSpec) PseudoHeaderOrder() []string {
+	return c.h2Options.PseudoHeaderOrder
+}

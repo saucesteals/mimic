@@ -37,9 +37,7 @@ func (c *ClientSpec) NewTransport(t1 *http.Transport) *Transport {
 }
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for key, values := range t.spec.headers {
-		for _, value := range values {
-			req.Header.Add(key, value)
-		}
+		req.Header[key] = values
 	}
 
 	return t.T.RoundTrip(req)
