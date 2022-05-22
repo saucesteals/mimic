@@ -37,7 +37,7 @@ func main() {
 			"sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest",
 			"accept-encoding", "accept-language",
 		},
-		http.PHeaderOrderKey: {":method", ":authority", ":scheme", ":path"},
+		http.PHeaderOrderKey: mimic.Chrome101.PseudoHeaderOrder(),
 	}
 
 	res, err := client.Do(req)
