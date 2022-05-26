@@ -3,8 +3,8 @@ module github.com/saucesteals/mimic
 go 1.18
 
 require (
-	github.com/refraction-networking/utls v1.1.0
-	github.com/saucesteals/fhttp v0.0.0-20220522200852-512ce1eef1bc
+	github.com/saucesteals/fhttp v0.0.0-20220526033555-3af979df77ea
+	github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a
 )
 
 require (
@@ -15,5 +15,3 @@ require (
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
-
-replace github.com/refraction-networking/utls => github.com/sleeyax/utls v1.1.2-0.20220222175148-aaca6e485c19

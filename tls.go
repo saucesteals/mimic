@@ -1,7 +1,7 @@
 package mimic
 
 import (
-	utls "github.com/refraction-networking/utls"
+	utls "github.com/saucesteals/utls"
 )
 
 func (c *ClientSpec) GetTLSSpec() *utls.ClientHelloSpec {
