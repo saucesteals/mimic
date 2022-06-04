@@ -5,6 +5,8 @@ github.com/klauspost/compress v1.15.4 h1:1kn4/7MepF/CHmYub99/nNX8az0IJjfSOU/jbnT
 github.com/klauspost/compress v1.15.4/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
 github.com/saucesteals/fhttp v0.0.0-20220601024201-f71f8dbeed0d h1:OfIVpJIuIRrgu3NT1oCGjimiJffv+IVODtQrWoEUyT4=
 github.com/saucesteals/fhttp v0.0.0-20220601024201-f71f8dbeed0d/go.mod h1:tEKifE6IjbxcvVSmEOiHH0e/3dvSv6sN4nailAD7tPE=
+github.com/saucesteals/fhttp v0.0.0-20220604094430-d4aee4943f8a h1:C15E5veaLk7rX/ofww9SnZ+v3oCr9hnnLusfH7V8x28=
+github.com/saucesteals/fhttp v0.0.0-20220604094430-d4aee4943f8a/go.mod h1:tEKifE6IjbxcvVSmEOiHH0e/3dvSv6sN4nailAD7tPE=
 github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a h1:jiEP6CVElK5wDp/e+eoiNopskFQKIQbI9ZvqzGh40cA=
 github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a/go.mod h1:I0obaa60NZ0gTwX8rpbeH6fb18E90q8YlhLdOF0ot0k=
 golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
