@@ -3,7 +3,7 @@ module github.com/saucesteals/mimic
 go 1.18
 
 require (
-	github.com/saucesteals/fhttp v0.0.0-20220604094430-d4aee4943f8a
+	github.com/saucesteals/fhttp v0.0.0-20220605173003-49317810090d
 	github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a
 )
 

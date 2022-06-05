@@ -9,7 +9,7 @@ import (
 
 // ConfigureTransport configures a net/http HTTP/1 Transport to follow the client's spec
 func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) {
-	t1.TlsClientHelloSpec = c.GetTLSSpec()
+	t1.GetTlsClientHelloSpec = c.GetTLSSpec
 
 	t2, err := http2.ConfigureTransports(t1)
 
@@ -22,7 +22,4 @@ func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) {
 	t2.MaxHeaderListSize = c.h2Options.MaxHeaderListSize
 	t2.InitialWindowSize = c.h2Options.MaxHeaderListSize
 	t2.HeaderTableSize = c.h2Options.MaxHeaderListSize
-
-	return
-
 }
