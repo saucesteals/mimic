@@ -75,8 +75,6 @@ func (c *ClientSpec) GetTLSSpec() *utls.ClientHelloSpec {
 						utls.GREASE_PLACEHOLDER,
 						utls.VersionTLS13,
 						utls.VersionTLS12,
-						utls.VersionTLS11,
-						utls.VersionTLS10,
 					}},
 				&utls.UtlsCompressCertExtension{
 					Methods: []utls.CertCompressionAlgo{
