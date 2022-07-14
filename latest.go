@@ -39,7 +39,7 @@ func GetLatestVersion(pf platform) (string, error) {
 		return "", err
 	}
 
-	if len(data.Versions) < 1 {
+	if len(data.Versions) == 0 {
 		return "", errNoVersions
 	}
 
