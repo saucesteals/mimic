@@ -5,21 +5,27 @@ import (
 	"io"
 
 	http "github.com/saucesteals/fhttp"
-	"github.com/saucesteals/mimic"
+	"github.com/saucesteals/mimic/chrome"
+)
+
+var (
+	latestChrome = chrome.MustGetLatestVersion(chrome.PlatformWindows)
 )
 
 func main() {
-	t := &http.Transport{ /* Proxy: ... */ }
-	mimic.Chrome101.ConfigureTransport(t)
-	client := &http.Client{Transport: t}
+	m, _ := chrome.Mimic(latestChrome)
+
+	ua := fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", m.Version())
+
+	client := &http.Client{Transport: m.ConfigureTransport(&http.Transport{ /* Proxy: ... */ })}
 
 	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
 
 	req.Header = http.Header{
-		"sec-ch-ua":          {`"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"`},
+		"sec-ch-ua":          {m.ClientHintUA()},
 		"rtt":                {"50"},
 		"sec-ch-ua-mobile":   {"?0"},
-		"user-agent":         {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36"},
+		"user-agent":         {ua},
 		"accept":             {"text/html,*/*"},
 		"x-requested-with":   {"XMLHttpRequest"},
 		"downlink":           {"3.9"},
@@ -37,7 +43,7 @@ func main() {
 			"sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest",
 			"accept-encoding", "accept-language",
 		},
-		http.PHeaderOrderKey: mimic.Chrome101.PseudoHeaderOrder(),
+		http.PHeaderOrderKey: m.PseudoHeaderOrder(),
 	}
 
 	res, err := client.Do(req)
