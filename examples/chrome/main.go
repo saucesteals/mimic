@@ -5,15 +5,15 @@ import (
 	"io"
 
 	http "github.com/saucesteals/fhttp"
-	"github.com/saucesteals/mimic/chrome"
+	"github.com/saucesteals/mimic"
 )
 
 var (
-	latestChrome = chrome.MustGetLatestVersion(chrome.PlatformWindows)
+	latestVersion = mimic.MustGetLatestVersion(mimic.PlatformWindows)
 )
 
 func main() {
-	m, _ := chrome.Mimic(latestChrome)
+	m, _ := mimic.Chromium(mimic.BrandChrome, latestVersion)
 
 	ua := fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", m.Version())
 

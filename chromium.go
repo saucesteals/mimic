@@ -1,4 +1,4 @@
-package chrome
+package mimic
 
 import (
 	"errors"
@@ -6,12 +6,11 @@ import (
 	"strings"
 
 	"github.com/saucesteals/fhttp/http2"
-	"github.com/saucesteals/mimic"
 	utls "github.com/saucesteals/utls"
 )
 
 var (
-	ErrUnsupportedVersion = errors.New("chrome: unsupported version")
+	ErrUnsupportedVersion = errors.New("mimic: unsupported version")
 )
 
 func getMajor(version string) (string, int, error) {
@@ -20,7 +19,7 @@ func getMajor(version string) (string, int, error) {
 	return major, iMajor, err
 }
 
-func Mimic(version string) (*mimic.ClientSpec, error) {
+func Chromium(brand Brand, version string) (*ClientSpec, error) {
 
 	major, iMajor, err := getMajor(version)
 
@@ -30,10 +29,10 @@ func Mimic(version string) (*mimic.ClientSpec, error) {
 
 	switch {
 	case iMajor >= 100:
-		return mimic.NewClientSpec(
+		return &ClientSpec{
 			version,
-			clientHintUA(iMajor, major, version),
-			&mimic.HTTP2Options{
+			clientHintUA(iMajor, brand, major, version),
+			&http2Options{
 				PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 				MaxHeaderListSize: 262144,
 				Settings: []http2.Setting{
@@ -122,7 +121,7 @@ func Mimic(version string) (*mimic.ClientSpec, error) {
 					},
 				}
 			},
-		), nil
+		}, nil
 	}
 
 	return nil, ErrUnsupportedVersion

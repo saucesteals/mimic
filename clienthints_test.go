@@ -1,24 +1,10 @@
-package chrome
+package mimic
 
 import (
 	"testing"
 )
 
-func TestMimic(t *testing.T) {
-	latest, err := GetLatestVersion(PlatformWindows)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = Mimic(latest)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestGrease(t *testing.T) {
+func TestClientHintUA(t *testing.T) {
 	tests := []struct {
 		version      string
 		clientHintUa string
@@ -34,7 +20,7 @@ func TestGrease(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		ua := clientHintUA(iMajor, major, test.version)
+		ua := clientHintUA(iMajor, BrandChrome, major, test.version)
 
 		if ua != test.clientHintUa {
 			t.Errorf("want %s; got %s", test.clientHintUa, ua)

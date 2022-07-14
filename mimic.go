@@ -4,30 +4,19 @@ import (
 	"log"
 
 	http "github.com/saucesteals/fhttp"
+	utls "github.com/saucesteals/utls"
 
 	"github.com/saucesteals/fhttp/http2"
-	utls "github.com/saucesteals/utls"
 )
-
-type FnTlsSpec func() *utls.ClientHelloSpec
-
-func NewClientSpec(version string, clientHintUA string, h2Options *HTTP2Options, getTlsSpec FnTlsSpec) *ClientSpec {
-	return &ClientSpec{
-		version:      version,
-		clientHintUA: clientHintUA,
-		h2Options:    h2Options,
-		getTlsSpec:   getTlsSpec,
-	}
-}
 
 type ClientSpec struct {
 	version      string
 	clientHintUA string
-	h2Options    *HTTP2Options
-	getTlsSpec   FnTlsSpec
+	h2Options    *http2Options
+	getTlsSpec   func() *utls.ClientHelloSpec
 }
 
-type HTTP2Options struct {
+type http2Options struct {
 	Settings          []http2.Setting
 	PseudoHeaderOrder []string
 	MaxHeaderListSize uint32

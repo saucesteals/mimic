@@ -1,4 +1,4 @@
-package chrome
+package mimic
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 type platform string
 
 var (
-	errNoVersions = errors.New("chrome: no versions in history")
+	errNoVersions = errors.New("mimic: no versions in chrome history")
 
 	PlatformWindows platform = "win"
 )
