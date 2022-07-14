@@ -24,7 +24,7 @@ type http2Options struct {
 	HeaderTableSize   uint32
 }
 
-// ConfigureTransport configures a net/http HTTP/1 Transport to follow the client's spec
+// ConfigureTransport configures a http.Transport to follow the client's spec
 // Returns the given Transport for convenience
 func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) *http.Transport {
 	t1.GetTlsClientHelloSpec = c.getTlsSpec
