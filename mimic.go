@@ -3,8 +3,8 @@ package mimic
 import (
 	"log"
 
+	utls "github.com/refraction-networking/utls"
 	http "github.com/saucesteals/fhttp"
-	utls "github.com/saucesteals/utls"
 
 	"github.com/saucesteals/fhttp/http2"
 )

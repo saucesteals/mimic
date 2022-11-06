@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	utls "github.com/refraction-networking/utls"
 	"github.com/saucesteals/fhttp/http2"
-	utls "github.com/saucesteals/utls"
 )
 
 var (
@@ -112,10 +112,11 @@ func Chromium(brand Brand, version string) (*ClientSpec, error) {
 								utls.VersionTLS12,
 							}},
 						&utls.UtlsCompressCertExtension{
-							Methods: []utls.CertCompressionAlgo{
+							Algorithms: []utls.CertCompressionAlgo{
 								utls.CertCompressionBrotli,
-							}},
-						&utls.ALPSExtension{SupportedProtocols: []string{"h2"}},
+							},
+						},
+						&utls.ApplicationSettingsExtension{SupportedProtocols: []string{"h2"}},
 						&utls.UtlsGREASEExtension{},
 						&utls.UtlsPaddingExtension{GetPaddingLen: utls.BoringPaddingStyle},
 					},
