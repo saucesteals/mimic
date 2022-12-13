@@ -24,22 +24,22 @@ func formatBrand(brand Brand, majorVersion string) string {
 }
 
 func greasedBrand(majorVersionNumber int, seed int, permutedOrder []int) string {
-	var greasedBrand, greasedVersion string
+	var brand, version string
 
 	switch {
 	case majorVersionNumber <= 102, majorVersionNumber == 104:
-		greasedBrand = fmt.Sprintf("%sNot%sA%sBrand", legacyGreasyChars[permutedOrder[0]], legacyGreasyChars[permutedOrder[1]], legacyGreasyChars[permutedOrder[2]])
-		greasedVersion = "99"
+		brand = fmt.Sprintf("%sNot%sA%sBrand", legacyGreasyChars[permutedOrder[0]], legacyGreasyChars[permutedOrder[1]], legacyGreasyChars[permutedOrder[2]])
+		version = "99"
 	case majorVersionNumber == 103:
-		greasedBrand = fmt.Sprintf("%sNot%sA%sBrand", greasyChars[(seed%(len(greasyChars)-1))+1], greasyChars[(seed+1)%len(greasyChars)], greasyChars[(seed+2)%len(greasyChars)])
-		greasedVersion = greasyVersion[seed%len(greasyVersion)]
+		brand = fmt.Sprintf("%sNot%sA%sBrand", greasyChars[(seed%(len(greasyChars)-1))+1], greasyChars[(seed+1)%len(greasyChars)], greasyChars[(seed+2)%len(greasyChars)])
+		version = greasyVersion[seed%len(greasyVersion)]
 	default: // >=105
 		// https://github.com/WICG/ua-client-hints/pull/310
-		greasedBrand = fmt.Sprintf("Not%sA%sBrand", greasyChars[seed%len(greasyChars)], greasyChars[(seed+1)%len(greasyChars)])
-		greasedVersion = greasyVersion[seed%len(greasyVersion)]
+		brand = fmt.Sprintf("Not%sA%sBrand", greasyChars[seed%len(greasyChars)], greasyChars[(seed+1)%len(greasyChars)])
+		version = greasyVersion[seed%len(greasyVersion)]
 	}
 
-	return formatBrand(Brand(greasedBrand), greasedVersion)
+	return formatBrand(Brand(brand), version)
 
 }
 
