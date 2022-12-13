@@ -20,18 +20,17 @@ func getMajor(version string) (string, int, error) {
 }
 
 func Chromium(brand Brand, version string) (*ClientSpec, error) {
-
-	major, iMajor, err := getMajor(version)
+	majorVersion, majorVersionNumber, err := getMajor(version)
 
 	if err != nil {
 		return nil, err
 	}
 
 	switch {
-	case iMajor >= 100:
+	case majorVersionNumber >= 100:
 		return &ClientSpec{
 			version,
-			clientHintUA(brand, iMajor, major, version),
+			clientHintUA(brand, majorVersion, majorVersionNumber),
 			&http2Options{
 				PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 				MaxHeaderListSize: 262144,
