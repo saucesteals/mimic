@@ -31,7 +31,7 @@ func Chromium(brand Brand, version string) (*ClientSpec, error) {
 	case iMajor >= 100:
 		return &ClientSpec{
 			version,
-			clientHintUA(iMajor, brand, major, version),
+			clientHintUA(brand, iMajor, major, version),
 			&http2Options{
 				PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 				MaxHeaderListSize: 262144,
