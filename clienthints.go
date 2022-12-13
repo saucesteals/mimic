@@ -23,7 +23,7 @@ func formatBrand(brand Brand, majorVersion string) string {
 	return fmt.Sprintf(`"%s";v="%s"`, brand, majorVersion)
 }
 
-func greasedBrand(majorVersionNumber int, seed int, permutedOrder []int) string {
+func greasedBrand(seed int, majorVersionNumber int, permutedOrder []int) string {
 	var brand, version string
 
 	switch {
@@ -54,7 +54,7 @@ func clientHintUA(brand Brand, majorVersion string, majorVersionNumber int) stri
 
 	greased := make([]string, 3)
 
-	greased[order[0]] = greasedBrand(majorVersionNumber, seed, order)
+	greased[order[0]] = greasedBrand(seed, majorVersionNumber, order)
 	greased[order[1]] = formatBrand("Chromium", majorVersion)
 	greased[order[2]] = formatBrand(brand, majorVersion)
 
