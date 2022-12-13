@@ -23,7 +23,7 @@ func formatBrand(brand Brand, majorVersion string) string {
 	return fmt.Sprintf(`"%s";v="%s"`, brand, majorVersion)
 }
 
-func greasedBrand(majorVersion int, permutation []int) string {
+func greasedBrand(majorVersion int, permutedOrder []int) string {
 	var brand, version string
 
 	switch {
@@ -32,7 +32,7 @@ func greasedBrand(majorVersion int, permutation []int) string {
 		version = greasyVersion[majorVersion%len(greasyVersion)]
 	case majorVersion == 104:
 		// updated grease disabled for some reason?
-		brand = fmt.Sprintf("%sNot%sA%sBrand", legacyGreasyChars[permutation[0]], legacyGreasyChars[permutation[1]], legacyGreasyChars[permutation[2]])
+		brand = fmt.Sprintf("%sNot%sA%sBrand", legacyGreasyChars[permutedOrder[0]], legacyGreasyChars[permutedOrder[1]], legacyGreasyChars[permutedOrder[2]])
 		version = "99"
 	default: // >=105
 		// https://github.com/WICG/ua-client-hints/pull/310
