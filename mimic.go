@@ -12,11 +12,11 @@ import (
 type ClientSpec struct {
 	version      string
 	clientHintUA string
-	h2Options    *http2Options
-	getTlsSpec   func() *utls.ClientHelloSpec
+	HTTP2Options *HTTP2Options
+	GetTlsSpec   func() *utls.ClientHelloSpec
 }
 
-type http2Options struct {
+type HTTP2Options struct {
 	Settings          []http2.Setting
 	PseudoHeaderOrder []string
 	MaxHeaderListSize uint32
@@ -27,7 +27,7 @@ type http2Options struct {
 // ConfigureTransport configures a http.Transport to follow the client's spec
 // Returns the given Transport for convenience
 func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) *http.Transport {
-	t1.GetTlsClientHelloSpec = c.getTlsSpec
+	t1.GetTlsClientHelloSpec = c.GetTlsSpec
 
 	t2, err := http2.ConfigureTransports(t1)
 
@@ -36,10 +36,10 @@ func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) *http.Transport {
 		return t1
 	}
 
-	t2.Settings = c.h2Options.Settings
-	t2.MaxHeaderListSize = c.h2Options.MaxHeaderListSize
-	t2.InitialWindowSize = c.h2Options.MaxHeaderListSize
-	t2.HeaderTableSize = c.h2Options.MaxHeaderListSize
+	t2.Settings = c.HTTP2Options.Settings
+	t2.MaxHeaderListSize = c.HTTP2Options.MaxHeaderListSize
+	t2.InitialWindowSize = c.HTTP2Options.MaxHeaderListSize
+	t2.HeaderTableSize = c.HTTP2Options.MaxHeaderListSize
 
 	return t1
 }
@@ -56,5 +56,5 @@ func (c *ClientSpec) ClientHintUA() string {
 
 // PseudoHeaderOrder returns the pseudo header order for the mimicked client.
 func (c *ClientSpec) PseudoHeaderOrder() []string {
-	return c.h2Options.PseudoHeaderOrder
+	return c.HTTP2Options.PseudoHeaderOrder
 }

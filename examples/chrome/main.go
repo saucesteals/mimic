@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
+	"os"
 
+	tls "github.com/refraction-networking/utls"
 	http "github.com/saucesteals/fhttp"
 	"github.com/saucesteals/mimic"
 )
@@ -17,7 +19,25 @@ func main() {
 
 	ua := fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", m.Version())
 
-	client := &http.Client{Transport: m.ConfigureTransport(&http.Transport{ /* Proxy: ... */ })}
+	var keyLogFile *os.File
+	keyLogPath := os.Getenv("SSLKEYLOGFILE")
+	if keyLogPath != "" {
+		var err error
+		keyLogFile, err = os.OpenFile(keyLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	client := &http.Client{
+		Transport: m.ConfigureTransport(&http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				KeyLogWriter:       keyLogFile,
+			},
+		}),
+	}
 
 	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
 
