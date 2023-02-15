@@ -80,7 +80,7 @@ func chromiumExtensions(randomize bool) []utls.TLSExtension {
 		return extensions
 	}
 
-	// randomize except for first (grase) and last two (grease and padding)
+	// randomize except for first (grease) and last two (grease and padding)
 	max := big.NewInt(int64(len(extensions) - 3))
 	for i := 1; i < len(extensions)-2; i++ {
 		j, err := rand.Int(rand.Reader, max)
