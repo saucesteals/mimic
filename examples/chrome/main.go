@@ -33,8 +33,7 @@ func main() {
 		Transport: m.ConfigureTransport(&http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-				KeyLogWriter:       keyLogFile,
+				KeyLogWriter: keyLogFile,
 			},
 		}),
 	}
