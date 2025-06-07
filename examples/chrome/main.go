@@ -56,6 +56,9 @@ func main() {
 
 	fmt.Printf("%s %s\n", req.Method, req.URL)
 	for key, value := range req.Header {
+		if key == http.HeaderOrderKey || key == http.PHeaderOrderKey {
+			continue
+		}
 		fmt.Printf("  %s: %s\n", key, value[0])
 	}
 	fmt.Println()
