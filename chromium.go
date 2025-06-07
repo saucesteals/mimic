@@ -72,7 +72,7 @@ func chromiumVersionHTTP2Options(majorVersion int) *HTTP2Options {
 			InitialWindowSize: 6291456,
 			HeaderTableSize:   65536,
 		}
-	default: // >=110
+	case majorVersion < 120:
 		return &HTTP2Options{
 			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
 			MaxHeaderListSize: 262144,
@@ -80,6 +80,19 @@ func chromiumVersionHTTP2Options(majorVersion int) *HTTP2Options {
 				{ID: http2.SettingHeaderTableSize, Val: 65536},
 				{ID: http2.SettingEnablePush, Val: 0},
 				{ID: http2.SettingMaxConcurrentStreams, Val: 1000},
+				{ID: http2.SettingInitialWindowSize, Val: 6291456},
+				{ID: http2.SettingMaxHeaderListSize, Val: 262144},
+			},
+			InitialWindowSize: 6291456,
+			HeaderTableSize:   65536,
+		}
+	default: // >=120
+		return &HTTP2Options{
+			PseudoHeaderOrder: []string{":method", ":authority", ":scheme", ":path"},
+			MaxHeaderListSize: 262144,
+			Settings: []http2.Setting{
+				{ID: http2.SettingHeaderTableSize, Val: 65536},
+				{ID: http2.SettingEnablePush, Val: 0},
 				{ID: http2.SettingInitialWindowSize, Val: 6291456},
 				{ID: http2.SettingMaxHeaderListSize, Val: 262144},
 			},
