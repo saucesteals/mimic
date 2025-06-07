@@ -37,7 +37,6 @@ func main() {
 
 	req, _ := http.NewRequest(http.MethodGet, "https://tls.peet.ws/api/clean", nil)
 
-	// mimic automatically sets: user-agent, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform
 	req.Header.Add("rtt", "50")
 	req.Header.Add("accept", "text/html,*/*")
 	req.Header.Add("x-requested-with", "XMLHttpRequest")
@@ -48,6 +47,9 @@ func main() {
 	req.Header.Add("sec-fetch-dest", "empty")
 	req.Header.Add("accept-encoding", "gzip, deflate, br")
 	req.Header.Add("accept-language", "en,en_US;q=0.9")
+	// mimic automatically sets: user-agent, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform
+
+	// req.Header[http.HeaderOrderKey] = []string{...} // optionally, you can set the order of the headers including the default ones from mimic
 
 	res, _ := client.Do(req)
 
