@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-type Brand string
-
 var (
 	legacyGreasyChars = []string{" ", " ", ";"}
 	greasyChars       = []string{" ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"}
@@ -15,8 +13,6 @@ var (
 		{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
 		{1, 2, 0}, {2, 0, 1}, {2, 1, 0},
 	}
-
-	BrandChrome Brand = "Google Chrome"
 )
 
 func formatBrand(brand Brand, majorVersion string) string {

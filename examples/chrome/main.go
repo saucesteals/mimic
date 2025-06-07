@@ -1,83 +1,86 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 
-	tls "github.com/refraction-networking/utls"
 	http "github.com/saucesteals/fhttp"
 	"github.com/saucesteals/mimic"
 )
 
-var (
-	latestVersion = mimic.MustGetLatestVersion(mimic.PlatformWindows)
-)
-
 func main() {
-	m, _ := mimic.Chromium(mimic.BrandChrome, latestVersion)
-
-	ua := fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", m.Version())
-
-	var keyLogFile *os.File
-	keyLogPath := os.Getenv("SSLKEYLOGFILE")
-	if keyLogPath != "" {
-		var err error
-		keyLogFile, err = os.OpenFile(keyLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-		if err != nil {
-			panic(err)
-		}
+	version := "137.0.0.0"
+	if len(os.Args) > 1 {
+		version = os.Args[1]
 	}
 
-	client := &http.Client{
-		Transport: m.ConfigureTransport(&http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{
-				KeyLogWriter: keyLogFile,
-			},
-		}),
+	transport, err := mimic.NewTransport(mimic.TransportOptions{
+		Version:   version,
+		Brand:     mimic.BrandChrome,     // or mimic.BrandBrave, mimic.BrandEdge
+		Platform:  mimic.PlatformWindows, // or mimic.PlatformMac, mimic.PlatformLinux
+		Transport: &http.Transport{Proxy: http.ProxyFromEnvironment},
+	})
+	if err != nil {
+		panic(err)
 	}
 
-	req, _ := http.NewRequest("GET", "https://tls.peet.ws/api/all", nil)
+	client := &http.Client{Transport: transport}
 
-	req.Header = http.Header{
-		"sec-ch-ua":          {m.ClientHintUA()},
-		"rtt":                {"50"},
-		"sec-ch-ua-mobile":   {"?0"},
-		"user-agent":         {ua},
-		"accept":             {"text/html,*/*"},
-		"x-requested-with":   {"XMLHttpRequest"},
-		"downlink":           {"3.9"},
-		"ect":                {"4g"},
-		"sec-ch-ua-platform": {`"Windows"`},
-		"sec-fetch-site":     {"same-origin"},
-		"sec-fetch-mode":     {"cors"},
-		"sec-fetch-dest":     {"empty"},
-		"accept-encoding":    {"gzip, deflate, br"},
-		"accept-language":    {"en,en_US;q=0.9"},
-		http.HeaderOrderKey: {
-			"sec-ch-ua", "rtt", "sec-ch-ua-mobile",
-			"user-agent", "accept", "x-requested-with",
-			"downlink", "ect", "sec-ch-ua-platform",
-			"sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest",
-			"accept-encoding", "accept-language",
-		},
-		http.PHeaderOrderKey: m.PseudoHeaderOrder(),
-	}
+	req, _ := http.NewRequest(http.MethodGet, "https://tls.peet.ws/api/clean", nil)
+
+	// mimic automatically sets: user-agent, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform
+	req.Header.Add("rtt", "50")
+	req.Header.Add("accept", "text/html,*/*")
+	req.Header.Add("x-requested-with", "XMLHttpRequest")
+	req.Header.Add("downlink", "3.9")
+	req.Header.Add("ect", "4g")
+	req.Header.Add("sec-fetch-site", "same-origin")
+	req.Header.Add("sec-fetch-mode", "cors")
+	req.Header.Add("sec-fetch-dest", "empty")
+	req.Header.Add("accept-encoding", "gzip, deflate, br")
+	req.Header.Add("accept-language", "en,en_US;q=0.9")
 
 	res, err := client.Do(req)
-
 	if err != nil {
 		panic(err)
 	}
 
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-
+	var response PeetCleanResponse
+	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(string(body))
+	fmt.Printf("%s %s\n", req.Method, req.URL)
+	for key, value := range req.Header {
+		fmt.Printf("  %s: %s\n", key, value[0])
+	}
+	fmt.Println()
+
+	pprint("JA3", response.Ja3)
+	pprint("JA3 Hash", response.Ja3Hash)
+	pprint("JA4", response.Ja4)
+	pprint("JA4-R", response.Ja4R)
+	pprint("Akamai", response.Akamai)
+	pprint("Akamai Hash", response.AkamaiHash)
+	pprint("Peetprint", response.Peetprint)
+	pprint("Peetprint Hash", response.PeetprintHash)
+}
+
+type PeetCleanResponse struct {
+	Ja3           string `json:"ja3"`
+	Ja3Hash       string `json:"ja3_hash"`
+	Ja4           string `json:"ja4"`
+	Ja4R          string `json:"ja4_r"`
+	Akamai        string `json:"akamai"`
+	AkamaiHash    string `json:"akamai_hash"`
+	Peetprint     string `json:"peetprint"`
+	PeetprintHash string `json:"peetprint_hash"`
+}
+
+func pprint(key string, value string) {
+	fmt.Printf("%s:\n%s\n\n", key, value)
 }

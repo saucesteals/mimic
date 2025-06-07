@@ -9,6 +9,22 @@ import (
 	"github.com/saucesteals/fhttp/http2"
 )
 
+type Platform string
+
+const (
+	PlatformWindows Platform = "win"
+	PlatformMac     Platform = "mac"
+	PlatformLinux   Platform = "linux"
+)
+
+type Brand string
+
+const (
+	BrandChrome Brand = "Google Chrome"
+	BrandBrave  Brand = "Brave"
+	BrandEdge   Brand = "Microsoft Edge"
+)
+
 type ClientSpec struct {
 	version      string
 	clientHintUA string
@@ -32,14 +48,14 @@ func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) *http.Transport {
 	t2, err := http2.ConfigureTransports(t1)
 
 	if err != nil {
-		log.Printf("error enabling Transport HTTP/2 support: %v", err)
+		log.Printf("mimic: error enabling Transport HTTP/2 support: %v", err)
 		return t1
 	}
 
 	t2.Settings = c.HTTP2Options.Settings
 	t2.MaxHeaderListSize = c.HTTP2Options.MaxHeaderListSize
-	t2.InitialWindowSize = c.HTTP2Options.MaxHeaderListSize
-	t2.HeaderTableSize = c.HTTP2Options.MaxHeaderListSize
+	t2.InitialWindowSize = c.HTTP2Options.InitialWindowSize
+	t2.HeaderTableSize = c.HTTP2Options.HeaderTableSize
 
 	return t1
 }
