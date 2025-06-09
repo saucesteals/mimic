@@ -49,7 +49,10 @@ func main() {
 	req.Header.Add("accept-language", "en,en_US;q=0.9")
 	// mimic automatically sets: user-agent, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform
 
-	// req.Header[http.HeaderOrderKey] = []string{...} // optionally, you can set the order of the headers including the default ones from mimic
+	// optional header order
+	// req.Header[http.HeaderOrderKey] = []string{
+	// 	"user-agent", "sec-ch-ua", "sec-ch-ua-mobile", ...
+	// }
 
 	res, _ := client.Do(req)
 
