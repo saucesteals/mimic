@@ -95,7 +95,7 @@ type Transport struct {
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	header := req.Header.Clone()
+	header := req.Header
 
 	header[http.PHeaderOrderKey] = t.PseudoHeaderOrder
 	for key, value := range t.DefaultHeaders {
@@ -116,8 +116,6 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		header[http.HeaderOrderKey] = keys
 	}
-
-	req.Header = header
 
 	return t.Transport.RoundTrip(req)
 }
