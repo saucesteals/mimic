@@ -99,6 +99,10 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	header[http.PHeaderOrderKey] = t.PseudoHeaderOrder
 	for key, value := range t.DefaultHeaders {
+		if override := header.Get(key); override != "" {
+			continue
+		}
+
 		if len(value) > 0 {
 			header.Set(key, value[0])
 		}
