@@ -94,6 +94,12 @@ type Transport struct {
 	DefaultHeaders    http.Header
 }
 
+type closeIdler interface {
+	CloseIdleConnections()
+}
+
+var _ closeIdler = (*Transport)(nil)
+
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	header := req.Header
 
@@ -122,4 +128,14 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	return t.Transport.RoundTrip(req)
+}
+
+func (t *Transport) CloseIdleConnections() {
+	if t.Transport == nil {
+		return
+	}
+
+	if tr, ok := t.Transport.(closeIdler); ok {
+		tr.CloseIdleConnections()
+	}
 }
