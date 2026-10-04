@@ -34,8 +34,10 @@ func chromiumVersionHelloId(majorVersion int) utls.ClientHelloID {
 		return utls.HelloChrome_114_Padding_PSK_Shuf
 	case majorVersion < 120:
 		return utls.HelloChrome_115_PQ
-	case majorVersion < 131:
+	case majorVersion < 124:
 		return utls.HelloChrome_120
+	case majorVersion < 131:
+		return utls.HelloChrome_120_PQ
 	case majorVersion < 133:
 		return utls.HelloChrome_131
 	default: // >=133
@@ -116,8 +118,10 @@ func Chromium(brand Brand, version string) (*ClientSpec, error) {
 	getSpec := func() *utls.ClientHelloSpec {
 		spec, err := utls.UTLSIdToSpec(helloId)
 		if err != nil {
-			panic(fmt.Sprintf("mimic: unexpected uid to spec conversion: %v", err)) // this should never happen as we only use built-in hello ids
+			panic(fmt.Sprintf("mimic: unexpected uid to spec conversion: %v", err))
 		}
+		updateChromiumTLS(&spec, majorVersionNumber)
+
 		return &spec
 	}
 

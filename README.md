@@ -4,6 +4,20 @@
 
 Mimic chromium's HTTP/HTTP2 and TLS implementations.
 
+Requires Go 1.26 or later.
+
+## TLS profiles
+
+Chromium profiles include post-quantum key exchange for Chrome 124–130,
+ML-DSA signature advertisement for Chrome 150+, and signature GREASE and
+trust-anchor IDs for Chrome 152+. Supplemental TLS changes are isolated from
+the base profiles until uTLS provides them.
+
+ML-DSA advertisement does not enable ML-DSA certificate or handshake signature
+verification. Trust-anchor IDs are profile data, not a replacement for the
+configured certificate roots. Browser feature flags and root-store updates may
+change the fingerprint; customize `ClientSpec.GetTlsSpec` when needed.
+
 ### Documentation
 
 - [API Reference](https://godoc.org/github.com/saucesteals/mimic)
@@ -21,19 +35,23 @@ go get github.com/saucesteals/mimic
 package main
 
 import (
+	"fmt"
+	"io"
+	"time"
+
 	http "github.com/saucesteals/fhttp"
 	"github.com/saucesteals/mimic"
 )
 
 func main() {
 	transport, _ := mimic.NewTransport(mimic.TransportOptions{
-		Version:   "137.0.0.0",
+		Version:   "154.0.0.0",
 		Brand:     mimic.BrandChrome,     // or mimic.BrandBrave, mimic.BrandEdge
 		Platform:  mimic.PlatformWindows, // or mimic.PlatformMac, mimic.PlatformLinux
 		Transport: &http.Transport{Proxy: http.ProxyFromEnvironment},
 	})
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: transport, Timeout: 30 * time.Second}
 
 	req, _ := http.NewRequest(http.MethodGet, "https://tls.peet.ws/api/clean", nil)
 
@@ -55,6 +73,7 @@ func main() {
 	// }
 
 	res, _ := client.Do(req)
+	defer res.Body.Close()
 
 	body, _ := io.ReadAll(res.Body)
 	fmt.Println(string(body))

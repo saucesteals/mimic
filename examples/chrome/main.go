@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	http "github.com/saucesteals/fhttp"
 	"github.com/saucesteals/mimic"
 )
 
 func main() {
-	version := "137.0.0.0"
+	version := "154.0.0.0"
 	if len(os.Args) > 1 {
 		version = os.Args[1]
 	}
@@ -25,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: transport, Timeout: 30 * time.Second}
 
 	req, _ := http.NewRequest(http.MethodGet, "https://tls.peet.ws/api/clean", nil)
 

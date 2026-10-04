@@ -44,6 +44,14 @@ type HTTP2Options struct {
 // Returns the given Transport for convenience
 func (c *ClientSpec) ConfigureTransport(t1 *http.Transport) *http.Transport {
 	t1.GetTlsClientHelloSpec = c.GetTlsSpec
+	// PSK profiles must omit the extension on the first connection, before a
+	// session ticket exists. Clone so a caller's shared TLS config is untouched.
+	if t1.TLSClientConfig == nil {
+		t1.TLSClientConfig = &utls.Config{}
+	} else {
+		t1.TLSClientConfig = t1.TLSClientConfig.Clone()
+	}
+	t1.TLSClientConfig.OmitEmptyPsk = true
 
 	t2, err := http2.ConfigureTransports(t1)
 
