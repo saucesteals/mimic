@@ -23,6 +23,9 @@ type http2Conn struct {
 	decoder               *hpack.Decoder
 	encoder               *hpack.Encoder
 	encoded               bytes.Buffer
+	fields                []hpack.HeaderField
+	order                 []string
+	payload, frame        []byte
 	tableMu               sync.Mutex
 	config                HTTP2Config
 	writeErr              error
@@ -59,7 +62,9 @@ func NewHTTP2(conn net.Conn, config HTTP2Config) net.Conn {
 		Conn:   conn,
 		config: config,
 	}
-	c.decoder = hpack.NewDecoder(min(uint32(config.EncoderLimit), 4096), nil)
+	c.decoder = hpack.NewDecoder(min(uint32(config.EncoderLimit), 4096), func(field hpack.HeaderField) {
+		c.fields = append(c.fields, field)
+	})
 	c.decoder.SetAllowedMaxDynamicTableSize(uint32(config.EncoderLimit))
 	c.encoder = hpack.NewEncoder(&c.encoded)
 	c.encoder.SetMaxDynamicTableSizeLimit(uint32(config.EncoderLimit))
@@ -186,7 +191,8 @@ func (c *http2Conn) Write(p []byte) (n int, err error) {
 		if len(raw) < length+9 {
 			break
 		}
-		raw = raw[:length+9]
+		size := length + 9
+		raw = raw[:size]
 		kind, flags, stream := raw[3], raw[4], binary.BigEndian.Uint32(raw[5:9])&0x7fffffff
 		switch {
 		case kind == 4 && flags&1 != 0 && c.settingsACKs > 0:
@@ -228,11 +234,20 @@ func (c *http2Conn) Write(p []byte) (n int, err error) {
 				c.headerStream = 0
 			}
 		default:
+			// Preserve native batches of flow-control updates in one TLS write.
+			// Splitting each frame adds a TLS record and socket write per update.
+			if kind == 8 && length == 4 {
+				pending := c.out.Bytes()
+				for size+13 <= len(pending) && bytes.Equal(pending[size:size+4], []byte{0, 0, 4, 8}) {
+					size += 13
+				}
+				raw = pending[:size]
+			}
 			if err := c.write(raw); err != nil {
 				return 0, err
 			}
 		}
-		c.out.Next(length + 9)
+		c.out.Next(size)
 	}
 
 	return len(p), nil
@@ -246,11 +261,12 @@ type Priority struct {
 }
 
 func (c *http2Conn) writeFrame(kind, flags byte, stream uint32, payload []byte) error {
-	frame := make([]byte, 9+len(payload))
+	c.frame = append(c.frame[:0], make([]byte, 9)...)
+	c.frame = append(c.frame, payload...)
+	frame := c.frame
 	n := len(payload)
 	frame[0], frame[1], frame[2], frame[3], frame[4] = byte(n>>16), byte(n>>8), byte(n), kind, flags
 	binary.BigEndian.PutUint32(frame[5:9], stream)
-	copy(frame[9:], payload)
 
 	return c.write(frame)
 }

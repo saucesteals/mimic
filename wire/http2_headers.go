@@ -9,10 +9,26 @@ import (
 )
 
 func (c *http2Conn) sendHeaders() error {
-	fields, err := c.decoder.DecodeFull(c.headerBlock)
-	if err != nil {
+	defer func() {
+		// Reuse ordinary header blocks without retaining old header strings.
+		clear(c.fields)
+		clear(c.order)
+		c.fields = c.fields[:0]
+		c.order = c.order[:0]
+		if cap(c.fields) > 256 {
+			c.fields = nil
+		}
+		if cap(c.order) > 256 {
+			c.order = nil
+		}
+	}()
+	if _, err := c.decoder.Write(c.headerBlock); err != nil {
 		return err
 	}
+	if err := c.decoder.Close(); err != nil {
+		return err
+	}
+	fields := c.fields
 	fetchMode := ""
 	var explicit []string
 	kept := fields[:0]
@@ -27,10 +43,11 @@ func (c *http2Conn) sendHeaders() error {
 		kept = append(kept, field)
 	}
 	fields = kept
-	order := append(slices.Clone(c.config.PseudoHeaderOrder), explicit...)
-	order = append(order, c.config.HeaderOrder(fetchMode)...)
+	c.order = append(c.order[:0], c.config.PseudoHeaderOrder...)
+	c.order = append(c.order, explicit...)
+	c.order = append(c.order, c.config.HeaderOrder(fetchMode)...)
 	slices.SortStableFunc(fields, func(a, b hpack.HeaderField) int {
-		return compareHeaderNames(order, a.Name, b.Name)
+		return compareHeaderNames(c.order, a.Name, b.Name)
 	})
 	c.tableMu.Lock()
 	c.encoded.Reset()
@@ -43,7 +60,7 @@ func (c *http2Conn) sendHeaders() error {
 	first := true
 	for first || c.encoded.Len() > 0 {
 		kind, flags, size := byte(9), byte(0), 16384
-		var payload []byte
+		payload := c.payload[:0]
 		if first {
 			kind = 1
 			flags = c.headerFlags
@@ -54,12 +71,13 @@ func (c *http2Conn) sendHeaders() error {
 				if c.config.Priority.Exclusive {
 					dep |= 1 << 31
 				}
-				payload = binary.BigEndian.AppendUint32(nil, dep)
+				payload = binary.BigEndian.AppendUint32(payload, dep)
 				payload = append(payload, c.config.Priority.Weight)
 			}
 		}
 		n := min(size, c.encoded.Len())
 		payload = append(payload, c.encoded.Next(n)...)
+		c.payload = payload
 		if c.encoded.Len() == 0 {
 			flags |= 4
 		}

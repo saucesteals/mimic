@@ -17,6 +17,14 @@ type HTTP1Conn struct {
 	headers bool
 	pending []byte
 	order   []string
+	fields  []http1Header
+	output  []byte
+}
+
+type http1Header struct {
+	line string
+	name string
+	rank int
 }
 
 // Begin marks the next native HTTP/1 request header block.
@@ -24,7 +32,7 @@ func (c *HTTP1Conn) Begin(order []string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.headers = true
-	c.pending = nil
+	c.pending = c.pending[:0]
 	c.order = order
 }
 
@@ -42,33 +50,62 @@ func (c *HTTP1Conn) Write(p []byte) (int, error) {
 		}
 		return len(p), nil
 	}
-	lines := strings.Split(string(c.pending[:end]), "\r\n")
+	defer func() {
+		clear(c.fields)
+		c.fields = c.fields[:0]
+		c.pending = c.pending[:0]
+		c.output = c.output[:0]
+		// An unusually large header block should not enlarge the idle connection.
+		if cap(c.fields) > 256 {
+			c.fields = nil
+		}
+		if cap(c.pending) > 64<<10 {
+			c.pending = nil
+		}
+		if cap(c.output) > 64<<10 {
+			c.output = nil
+		}
+	}()
+	first, rest, _ := strings.Cut(string(c.pending[:end]), "\r\n")
 	var explicit []string
-	kept := lines[:1]
-	for _, line := range lines[1:] {
+	for rest != "" {
+		line, tail, _ := strings.Cut(rest, "\r\n")
+		rest = tail
 		name, value, ok := strings.Cut(line, ":")
+		name = strings.ToLower(name)
 		if ok && strings.EqualFold(name, headerOrderKey) {
 			explicit = append(explicit, headerOrder(value)...)
 			continue
 		}
-		if ok && strings.HasPrefix(strings.ToLower(name), "sec-ch-") {
-			line = strings.ToLower(name) + ":" + value
+		if ok && strings.HasPrefix(name, "sec-ch-") {
+			line = name + ":" + value
 		}
-		kept = append(kept, line)
+		c.fields = append(c.fields, http1Header{line: line, name: name})
 	}
-	lines = kept
 	order := append(explicit, c.order...)
-	slices.SortStableFunc(lines[1:], func(a, b string) int {
-		a, _, _ = strings.Cut(a, ":")
-		b, _, _ = strings.Cut(b, ":")
+	for i := range c.fields {
+		rank := slices.Index(order, c.fields[i].name)
+		if rank < 0 {
+			rank = len(order)
+		}
+		c.fields[i].rank = rank
+	}
+	slices.SortStableFunc(c.fields, func(a, b http1Header) int {
+		if a.rank != b.rank {
+			return a.rank - b.rank
+		}
 
-		return compareHeaderNames(order, strings.ToLower(a), strings.ToLower(b))
+		return strings.Compare(a.name, b.name)
 	})
-	data := []byte(strings.Join(lines, "\r\n") + "\r\n\r\n")
-	data = append(data, c.pending[end+4:]...)
-	c.pending = nil
+	c.output = append(c.output[:0], first...)
+	for _, field := range c.fields {
+		c.output = append(c.output, '\r', '\n')
+		c.output = append(c.output, field.line...)
+	}
+	c.output = append(c.output, "\r\n\r\n"...)
+	c.output = append(c.output, c.pending[end+4:]...)
 	c.headers = false
-	if n, err := bytes.NewReader(data).WriteTo(c.Conn); err != nil {
+	if n, err := bytes.NewReader(c.output).WriteTo(c.Conn); err != nil {
 		// Preserve a partial write: reporting zero could make net/http retry a POST.
 		return min(int(n), len(p)), err
 	}
