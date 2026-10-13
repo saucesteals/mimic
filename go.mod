@@ -1,18 +1,13 @@
 module github.com/saucesteals/mimic
 
-go 1.24
+go 1.27.2
 
 require (
-	github.com/refraction-networking/utls v1.7.4-0.20250519154908-0557f61cb0b8
-	github.com/saucesteals/fhttp v1.0.1
+	github.com/andybalholm/brotli v1.2.2
+	github.com/klauspost/compress v1.20.3
+	github.com/saucesteals/tlsx v0.1.1
+	golang.org/x/crypto v0.57.0
+	golang.org/x/net v0.58.0
 )
 
-require (
-	github.com/andybalholm/brotli v1.0.6 // indirect
-	github.com/cloudflare/circl v1.5.0 // indirect
-	github.com/klauspost/compress v1.17.4 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-)
+require golang.org/x/sys v0.48.0 // indirect
