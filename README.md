@@ -14,7 +14,7 @@ cancellation. Keep your `http.Client`, cookie jar, middleware and `httptrace`.
 Requires Go 1.27.2 or later.
 
 ```sh
-go get github.com/saucesteals/mimic@v1.1.0-beta.1
+go get github.com/saucesteals/mimic@v1.1.0-beta.2
 ```
 
 This is a breaking redesign of v1.0.x. The module path is unchanged; migrate
