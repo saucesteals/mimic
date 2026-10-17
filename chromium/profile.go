@@ -125,10 +125,15 @@ func New(config Config) (*mimic.Profile, error) {
 		}
 		userAgent += " " + token + "/" + version
 	}
+	acceptEncoding := "gzip, deflate, br"
+	if majorVersionNumber >= 123 {
+		acceptEncoding += ", zstd"
+	}
 	return &mimic.Profile{
 		ClientHello: getSpec,
 		HTTP2:       http2Profile(majorVersionNumber),
 		Headers: http.Header{
+			"Accept-Encoding":    {acceptEncoding},
 			"Sec-Ch-Ua":          {clientHintUA(brand, majorVersion, majorVersionNumber)},
 			"Sec-Ch-Ua-Mobile":   {mobile},
 			"Sec-Ch-Ua-Platform": {fmt.Sprintf("%q", platformName)},

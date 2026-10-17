@@ -55,6 +55,11 @@ func New(config Config) (*mimic.Profile, error) {
 	default:
 		return nil, fmt.Errorf("safari: unsupported platform: %s", platform)
 	}
+	acceptEncoding := "gzip, deflate, br"
+	if version == "26.3" {
+		// This snapshot assumes the matching OS networking stack.
+		acceptEncoding += ", zstd"
+	}
 	return &mimic.Profile{
 		ClientHello: func() (*wire.ClientHelloProfile, error) { return clientHello(version, platform) },
 		HTTP2: &mimic.HTTP2Profile{
@@ -76,6 +81,7 @@ func New(config Config) (*mimic.Profile, error) {
 			},
 		},
 		Headers: http.Header{
+			"Accept-Encoding": {acceptEncoding},
 			"User-Agent": {fmt.Sprintf(
 				"Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/%s %s",
 				agent, version, tail,
