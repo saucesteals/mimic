@@ -84,6 +84,7 @@ func New(config Config) (*mimic.Profile, error) {
 			Priority:            &mimic.HTTP2Priority{Weight: 41},
 		},
 		Headers: http.Header{
+			"Accept-Encoding": {"gzip, deflate, br, zstd"},
 			"User-Agent": {fmt.Sprintf(
 				"Mozilla/5.0 (%s; rv:157.0) Gecko/%s Firefox/157.0",
 				agent, gecko,

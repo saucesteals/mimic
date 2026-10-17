@@ -225,6 +225,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if r.Header == nil {
 		r.Header = make(http.Header)
 	}
+	profileEncoding := false
 defaults:
 	for k, v := range t.profile.Headers {
 		for present := range r.Header {
@@ -232,7 +233,34 @@ defaults:
 				continue defaults
 			}
 		}
+		if strings.EqualFold(k, "Accept-Encoding") {
+			k = "Accept-Encoding"
+			profileEncoding = true
+		}
 		r.Header[k] = append([]string(nil), v...)
+	}
+	// Resolve all defaults before negotiating compression. net/http uses the
+	// canonical keys for these fields; caller headers still win case-insensitively.
+	for k, v := range r.Header {
+		canonical := ""
+		switch {
+		case strings.EqualFold(k, "Accept-Encoding"):
+			canonical = "Accept-Encoding"
+		case strings.EqualFold(k, "Range"):
+			canonical = "Range"
+		}
+		if canonical != "" && k != canonical {
+			r.Header[canonical] = append(r.Header[canonical], v...)
+			delete(r.Header, k)
+		}
+	}
+	decode := false
+	if profileEncoding {
+		if tr.DisableCompression || r.Method == http.MethodHead || r.Header.Get("Range") != "" {
+			r.Header.Del("Accept-Encoding")
+		} else {
+			decode = r.Header.Get("Accept-Encoding") != ""
+		}
 	}
 	if !tr.DisableKeepAlives && !r.Close && r.Header.Get("Connection") == "" {
 		r.Header.Set("Connection", "keep-alive")
@@ -249,6 +277,9 @@ defaults:
 	resp, err := tr.RoundTrip(r)
 	if resp != nil {
 		resp.Request = req
+		if decode && err == nil {
+			decodeResponse(resp)
+		}
 	}
 
 	return resp, err

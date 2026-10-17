@@ -21,8 +21,11 @@ const HeaderOrderKey = wire.HeaderOrderKey
 // Configure it before use; do not mutate it while any transport uses it.
 // ClientHello must return a fresh specification for each connection.
 type Profile struct {
-	ClientHello         func() (*wire.ClientHelloProfile, error)
-	HTTP2               *HTTP2Profile
+	ClientHello func() (*wire.ClientHelloProfile, error)
+	HTTP2       *HTTP2Profile
+	// Headers supplies defaults without replacing caller headers. When the
+	// profile supplies Accept-Encoding, the transport decodes supported responses
+	// automatically, unless compression is disabled or the request is HEAD/ranged.
 	Headers             http.Header
 	HeaderOrder         []string
 	ResourceHeaderOrder []string

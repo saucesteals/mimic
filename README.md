@@ -14,7 +14,7 @@ cancellation. Keep your `http.Client`, cookie jar, middleware and `httptrace`.
 Requires Go 1.27.2 or later.
 
 ```sh
-go get github.com/saucesteals/mimic@v1.1.0-beta.2
+go get github.com/saucesteals/mimic@v1.1.0-beta.3
 ```
 
 This is a breaking redesign of v1.0.x. The module path is unchanged; migrate
@@ -77,13 +77,14 @@ explicitly, and the brand for Chromium.
 - `safari`: Safari 26.0–26.3, including 26.0.1, on macOS, iPhone and iPad desktop mode.
   The initial 26.0 TLS snapshots differ by platform; later versions use the hybrid snapshot.
 
-Profiles supply User-Agent and header defaults, including Chromium client hints.
+Profiles supply User-Agent, Accept-Encoding and other header defaults, including
+Chromium client hints.
 For Chrome or Firefox on iOS, use Safari's wire profile and set the appropriate
 request headers.
 
 These are versioned wire profiles, not a browser runtime. A different version
-string does not reproduce an arbitrary browser release. Request semantics and
-response-body decoding remain the caller's responsibility.
+string does not reproduce an arbitrary browser release. Request semantics remain
+the caller's responsibility.
 
 ## Configuration
 
@@ -102,6 +103,16 @@ ALPN and TLS compatibility; custom TLS dialers are not supported.
 `HTTP.TLSClientConfig` configures HTTPS proxies, not origin TLS. Proxies are chosen
 at dial time, and pooled tunnels keep their original proxy. Use separate
 transports when proxy isolation matters.
+
+### Compression
+
+Profiles set `Accept-Encoding`; Mimic transparently decodes gzip, deflate, Brotli
+and Zstandard responses. A nonempty request `Accept-Encoding` overrides the
+profile and leaves decoding to you. Use `Accept-Encoding: identity` to request
+an uncompressed response.
+
+`HTTP.DisableCompression`, `HEAD` and range requests skip automatic negotiation
+and decoding. Unknown encodings and partial-content responses pass through unchanged.
 
 ### Explicit header order
 
