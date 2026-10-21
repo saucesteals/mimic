@@ -8,7 +8,7 @@ import (
 	"github.com/saucesteals/mimic/wire"
 )
 
-func clientHello(version string, platform Platform) (*wire.ClientHelloProfile, error) {
+func clientHello(initial bool, platform Platform) (*wire.ClientHelloProfile, error) {
 	group, first, last := wire.GREASE(), wire.GREASE(), wire.GREASE()
 	if first == last {
 		last ^= 0x1010
@@ -62,7 +62,7 @@ func clientHello(version string, platform Platform) (*wire.ClientHelloProfile, e
 			{ID: last, Data: []byte{0}},
 		},
 	}
-	if version == "26.0" {
+	if initial {
 		p.Extensions = slices.Insert(p.Extensions, 6, wire.ClientHelloExtension{ID: 35})
 		if platform != Mac {
 			// The initial iOS 26 snapshot predates the hybrid key-share update.

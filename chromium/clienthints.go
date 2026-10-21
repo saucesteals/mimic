@@ -24,7 +24,8 @@ func clientHintUA(brand Brand, majorVersion string, majorVersionNumber int) stri
 
 	greased := make([]string, 3)
 
-	grease := fmt.Sprintf("Not%sA%sBrand", greasyChars[seed%len(greasyChars)], greasyChars[(seed+1)%len(greasyChars)])
+	charIndex := seed % len(greasyChars)
+	grease := fmt.Sprintf("Not%sA%sBrand", greasyChars[charIndex], greasyChars[(charIndex+1)%len(greasyChars)])
 	greased[order[0]] = formatBrand(Brand(grease), greasyVersion[seed%len(greasyVersion)])
 	greased[order[1]] = formatBrand("Chromium", majorVersion)
 	greased[order[2]] = formatBrand(brand, majorVersion)
