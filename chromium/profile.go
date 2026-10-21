@@ -72,7 +72,8 @@ func http2Profile(majorVersion int) *mimic.HTTP2Profile {
 	}
 }
 
-// New returns a fresh profile for Chromium 107–154, excluding draft-Kyber versions.
+// New returns a fresh profile for Chromium 107+, excluding draft-Kyber versions.
+// Newer versions reuse the latest implemented wire behavior.
 // Brand selects the default headers; platform also selects TLS key shares.
 func New(config Config) (*mimic.Profile, error) {
 	brand, version, platform := config.Brand, config.Version, config.Platform
@@ -82,7 +83,7 @@ func New(config Config) (*mimic.Profile, error) {
 		return nil, err
 	}
 
-	if majorVersionNumber < 107 || majorVersionNumber > 154 {
+	if majorVersionNumber < 107 {
 		return nil, ErrUnsupportedVersion
 	}
 

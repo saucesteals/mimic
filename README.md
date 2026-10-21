@@ -14,7 +14,7 @@ cancellation. Keep your `http.Client`, cookie jar, middleware and `httptrace`.
 Requires Go 1.27.2 or later.
 
 ```sh
-go get github.com/saucesteals/mimic@v1.1.0-beta.3
+go get github.com/saucesteals/mimic@v1.1.0-beta.4
 ```
 
 This is a breaking redesign of v1.0.x. The module path is unchanged; migrate
@@ -71,10 +71,10 @@ func main() {
 Each browser package provides `New(Config)`. Set the version and platform
 explicitly, and the brand for Chromium.
 
-- `chromium`: Chrome, Brave and Edge 107–154 on Windows, macOS, Linux and Android.
+- `chromium`: Chrome, Brave and Edge 107+ on Windows, macOS, Linux and Android.
   Versions 115–119 and 124–130 require obsolete draft-Kyber and are rejected.
-- `firefox`: Firefox 157 on Windows, macOS, Linux and Android.
-- `safari`: Safari 26.0–26.3, including 26.0.1, on macOS, iPhone and iPad desktop mode.
+- `firefox`: Firefox 157+ on Windows, macOS, Linux and Android.
+- `safari`: Safari 26+ on macOS, iPhone and iPad desktop mode.
   The initial 26.0 TLS snapshots differ by platform; later versions use the hybrid snapshot.
 
 Profiles supply User-Agent, Accept-Encoding and other header defaults, including
@@ -82,9 +82,9 @@ Chromium client hints.
 For Chrome or Firefox on iOS, use Safari's wire profile and set the appropriate
 request headers.
 
-These are versioned wire profiles, not a browser runtime. A different version
-string does not reproduce an arbitrary browser release. Request semantics remain
-the caller's responsibility.
+Newer versions reuse the latest implemented wire behavior with the requested
+version in headers (major-only for Firefox). This does not guarantee an exact
+fingerprint for unmodeled releases. Request semantics remain the caller's responsibility.
 
 ## Configuration
 

@@ -30,20 +30,22 @@ type Config struct {
 // ErrUnsupportedVersion identifies versions without a supported snapshot.
 var ErrUnsupportedVersion = errors.New("firefox: unsupported version")
 
-// New returns a Firefox 157 profile using normal (ticket-enabled) browsing.
-// The snapshot follows Firefox 157 defaults, not uTLS's private/no-ticket 148
-// preset. Header defaults describe navigation; callers own request semantics.
+// New returns a Firefox 157+ profile using normal (ticket-enabled) browsing.
+// Newer versions reuse the Firefox 157 wire snapshot. User-Agent versions use
+// the requested major version; callers own request semantics.
 func New(config Config) (*mimic.Profile, error) {
 	version, platform := config.Version, config.Platform
 	parts := strings.Split(version, ".")
-	if len(parts) > 3 || parts[0] != "157" {
+	if len(parts) > 3 {
 		return nil, ErrUnsupportedVersion
 	}
-	for _, part := range parts {
-		if _, err := strconv.ParseUint(part, 10, 16); err != nil {
+	for i, part := range parts {
+		n, err := strconv.ParseUint(part, 10, 16)
+		if err != nil || i == 0 && n < 157 {
 			return nil, ErrUnsupportedVersion
 		}
 	}
+	userAgentVersion := parts[0] + ".0"
 	var agent string
 	switch platform {
 	case Windows:
@@ -59,7 +61,7 @@ func New(config Config) (*mimic.Profile, error) {
 	}
 	gecko := "20100101"
 	if platform == Android {
-		gecko = "157.0"
+		gecko = userAgentVersion
 	}
 	return &mimic.Profile{
 		ClientHello: clientHello,
@@ -86,8 +88,8 @@ func New(config Config) (*mimic.Profile, error) {
 		Headers: http.Header{
 			"Accept-Encoding": {"gzip, deflate, br, zstd"},
 			"User-Agent": {fmt.Sprintf(
-				"Mozilla/5.0 (%s; rv:157.0) Gecko/%s Firefox/157.0",
-				agent, gecko,
+				"Mozilla/5.0 (%s; rv:%s) Gecko/%s Firefox/%s",
+				agent, userAgentVersion, gecko, userAgentVersion,
 			)},
 		},
 		HeaderOrder: []string{

@@ -1,10 +1,12 @@
-// Package safari constructs Safari 26 TLS and HTTP/2 profiles.
+// Package safari constructs Safari TLS and HTTP/2 profiles.
 package safari
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/saucesteals/mimic"
 	"github.com/saucesteals/mimic/wire"
@@ -29,18 +31,26 @@ type Config struct {
 // ErrUnsupportedVersion identifies versions without a supported snapshot.
 var ErrUnsupportedVersion = errors.New("safari: unsupported version")
 
-// New returns a Safari 26.0–26.3 profile, including the 26.0.1 TLS update.
+// New returns a Safari 26+ profile, including the 26.0.1 TLS update.
+// Newer versions reuse the latest implemented wire behavior.
 // HTTP/2 uses the Safari 26 settings shared by the supported platforms.
-// Headers and wire settings may be customized before creating a transport.
 func New(config Config) (*mimic.Profile, error) {
 	version, platform := config.Version, config.Platform
-	switch version {
-	case "26", "26.0", "26.0.1", "26.1", "26.2", "26.3":
-	default:
+	parts := strings.Split(version, ".")
+	if len(parts) > 3 {
 		return nil, ErrUnsupportedVersion
 	}
-	if version == "26" {
-		version = "26.0"
+	var numbers [3]uint64
+	for i, part := range parts {
+		n, err := strconv.ParseUint(part, 10, 16)
+		if err != nil || i == 0 && n < 26 {
+			return nil, ErrUnsupportedVersion
+		}
+		numbers[i] = n
+	}
+	initial := numbers == [3]uint64{26, 0, 0}
+	if len(parts) == 1 {
+		version += ".0"
 	}
 	agent := "Macintosh; Intel Mac OS X 10_15_7"
 	tail := "Safari/605.1.15"
@@ -48,7 +58,7 @@ func New(config Config) (*mimic.Profile, error) {
 	case Mac, IPad:
 	case IPhone:
 		agent = "iPhone; CPU iPhone OS 18_7 like Mac OS X"
-		if version == "26.0" {
+		if initial {
 			agent = "iPhone; CPU iPhone OS 18_6 like Mac OS X"
 		}
 		tail = "Mobile/15E148 Safari/604.1"
@@ -56,12 +66,12 @@ func New(config Config) (*mimic.Profile, error) {
 		return nil, fmt.Errorf("safari: unsupported platform: %s", platform)
 	}
 	acceptEncoding := "gzip, deflate, br"
-	if version == "26.3" {
+	if numbers[0] > 26 || numbers[1] >= 3 {
 		// This snapshot assumes the matching OS networking stack.
 		acceptEncoding += ", zstd"
 	}
 	return &mimic.Profile{
-		ClientHello: func() (*wire.ClientHelloProfile, error) { return clientHello(version, platform) },
+		ClientHello: func() (*wire.ClientHelloProfile, error) { return clientHello(initial, platform) },
 		HTTP2: &mimic.HTTP2Profile{
 			Settings: []mimic.HTTP2Setting{
 				{ID: 2, Val: 0},
